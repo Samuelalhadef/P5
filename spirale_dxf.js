@@ -1,0 +1,215 @@
+let dxfData = [];
+
+// Conversion pixels vers mm (794 pixels = 210mm)
+const SCALE = 210 / 794;
+
+function setup() {
+    createCanvas(794, 794);
+    noLoop();
+
+    // Bouton d'export
+    let btn = createButton('Télécharger DXF (210mm x 210mm)');
+    btn.mousePressed(exportDXF);
+    btn.style('margin', '20px');
+    btn.style('padding', '15px 30px');
+    btn.style('font-size', '16px');
+}
+
+function draw() {
+    background(10);
+    translate(width / 2, height / 2);
+
+    colorMode(HSB);
+    noFill();
+
+    // Spirale principale avec lignes connectées
+    let points = [];
+    let spirales = 8;
+    let tours = 6;
+    let pointsParTour = 60;
+
+    for (let s = 0; s < spirales; s++) {
+        let angleOffset = (TWO_PI / spirales) * s;
+        let vertices = [];
+
+        for (let i = 0; i < tours * pointsParTour; i++) {
+            let angle = (TWO_PI / pointsParTour) * i + angleOffset;
+            let rayon = map(i, 0, tours * pointsParTour, 10, 350);
+            let x = cos(angle) * rayon;
+            let y = sin(angle) * rayon;
+
+            vertices.push({x: x, y: y});
+
+            if (i > 0) {
+                let hue = map(i, 0, tours * pointsParTour, 160, 280);
+                stroke(hue, 80, 90);
+                strokeWeight(1);
+                line(vertices[vertices.length - 2].x, vertices[vertices.length - 2].y, x, y);
+            }
+
+            points.push({x: x, y: y, angle: angle, rayon: rayon});
+        }
+
+        // Ajouter la spirale comme polyline
+        addPolyline(vertices, false);
+    }
+
+    // Lignes radiales créant des intersections
+    for (let i = 0; i < 72; i++) {
+        let angle = (TWO_PI / 72) * i;
+        let x1 = cos(angle) * 50;
+        let y1 = sin(angle) * 50;
+        let x2 = cos(angle) * 350;
+        let y2 = sin(angle) * 350;
+
+        stroke(200 + i, 60, 70, 0.3);
+        strokeWeight(0.5);
+        addLine(x1, y1, x2, y2);
+        line(x1, y1, x2, y2);
+    }
+
+    // Connexions entre spirales
+    for (let i = 0; i < points.length - 100; i += 10) {
+        for (let j = i + 50; j < i + 150 && j < points.length; j += 25) {
+            let distance = dist(points[i].x, points[i].y, points[j].x, points[j].y);
+            if (distance < 100) {
+                stroke(240, 70, 80, 0.2);
+                strokeWeight(0.3);
+                addLine(points[i].x, points[i].y, points[j].x, points[j].y);
+                line(points[i].x, points[i].y, points[j].x, points[j].y);
+            }
+        }
+    }
+
+    // Cercle central
+    stroke(180, 80, 100);
+    strokeWeight(3);
+    addCircle(0, 0, 20);
+    circle(0, 0, 20);
+}
+
+function addLine(x1, y1, x2, y2) {
+    dxfData.push({
+        type: 'LINE',
+        x1: x1 * SCALE,
+        y1: -y1 * SCALE,
+        x2: x2 * SCALE,
+        y2: -y2 * SCALE
+    });
+}
+
+function addCircle(x, y, diameter) {
+    dxfData.push({
+        type: 'CIRCLE',
+        x: x * SCALE,
+        y: -y * SCALE,
+        radius: (diameter / 2) * SCALE
+    });
+}
+
+function addPolyline(vertices, closed) {
+    dxfData.push({
+        type: 'POLYLINE',
+        vertices: vertices.map(v => ({
+            x: v.x * SCALE,
+            y: -v.y * SCALE
+        })),
+        closed: closed
+    });
+}
+
+function exportDXF() {
+    let dxf = generateDXF(dxfData);
+
+    let blob = new Blob([dxf], { type: 'application/dxf' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'spirale_210x210mm.dxf';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function generateDXF(data) {
+    let dxf = `0
+SECTION
+2
+HEADER
+9
+$INSUNITS
+70
+4
+0
+ENDSEC
+0
+SECTION
+2
+ENTITIES
+`;
+
+    for (let entity of data) {
+        if (entity.type === 'LINE') {
+            dxf += `0
+LINE
+8
+0
+62
+6
+10
+${entity.x1.toFixed(6)}
+20
+${entity.y1.toFixed(6)}
+30
+0.0
+11
+${entity.x2.toFixed(6)}
+21
+${entity.y2.toFixed(6)}
+31
+0.0
+`;
+        } else if (entity.type === 'CIRCLE') {
+            dxf += `0
+CIRCLE
+8
+0
+62
+6
+10
+${entity.x.toFixed(6)}
+20
+${entity.y.toFixed(6)}
+30
+0.0
+40
+${entity.radius.toFixed(6)}
+`;
+        } else if (entity.type === 'POLYLINE') {
+            dxf += `0
+LWPOLYLINE
+8
+0
+62
+6
+90
+${entity.vertices.length}
+70
+${entity.closed ? 1 : 0}
+`;
+            for (let v of entity.vertices) {
+                dxf += `10
+${v.x.toFixed(6)}
+20
+${v.y.toFixed(6)}
+`;
+            }
+        }
+    }
+
+    dxf += `0
+ENDSEC
+0
+EOF
+`;
+    return dxf;
+}

@@ -2,103 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rosace P5.js</title>
+    <title>Rosace Optimisée (Logique BASIC)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #1a1a1a;
-        }
-    </style>
+    <link rel="stylesheet" href="rosace.css">
 </head>
 <body>
-    <script>
-        function setup() {
-            createCanvas(800, 800);
-            noLoop();
-        }
-
-        function draw() {
-            background(20);
-            translate(width / 2, height / 2);
-
-            // Nombre de rayons principaux
-            let rayons = 24;
-
-            noFill();
-
-            // Couleur 1 : Blanc
-            let couleur1 = color(255, 255, 255);
-            // Couleur 2 : Cyan
-            let couleur2 = color(0, 200, 255);
-
-            // Cercles concentriques (alternance de couleurs)
-            for (let i = 1; i <= 8; i++) {
-                let rayon = i * 40;
-                stroke(i % 2 === 0 ? couleur1 : couleur2);
-                strokeWeight(2);
-                circle(0, 0, rayon * 2);
-            }
-
-            // Lignes radiales depuis le centre (alternance)
-            for (let i = 0; i < rayons; i++) {
-                let angle = (TWO_PI / rayons) * i;
-                let x = cos(angle) * 320;
-                let y = sin(angle) * 320;
-
-                stroke(i % 2 === 0 ? couleur1 : couleur2);
-                strokeWeight(1.5);
-                line(0, 0, x, y);
-            }
-
-            // Lignes connectant les points sur les cercles (couleur 2)
-            for (let cercle = 1; cercle <= 8; cercle++) {
-                let rayon = cercle * 40;
-                stroke(couleur2);
-                strokeWeight(1);
-
-                for (let i = 0; i < rayons; i++) {
-                    let angle1 = (TWO_PI / rayons) * i;
-                    let angle2 = (TWO_PI / rayons) * (i + 1);
-
-                    let x1 = cos(angle1) * rayon;
-                    let y1 = sin(angle1) * rayon;
-                    let x2 = cos(angle2) * rayon;
-                    let y2 = sin(angle2) * rayon;
-
-                    line(x1, y1, x2, y2);
-                }
-            }
-
-            // Lignes croisées pour créer des motifs (couleur 1 avec transparence)
-            stroke(255, 255, 255, 100);
-            for (let i = 0; i < rayons; i++) {
-                for (let j = i + 2; j < i + 6 && j < rayons; j++) {
-                    let angle1 = (TWO_PI / rayons) * i;
-                    let angle2 = (TWO_PI / rayons) * j;
-
-                    let rayon = 280;
-                    let x1 = cos(angle1) * rayon;
-                    let y1 = sin(angle1) * rayon;
-                    let x2 = cos(angle2) * rayon;
-                    let y2 = sin(angle2) * rayon;
-
-                    strokeWeight(0.5);
-                    line(x1, y1, x2, y2);
-                }
-            }
-
-            // Point central (couleur 1)
-            stroke(couleur1);
-            strokeWeight(8);
-            point(0, 0);
-        }
-    </script>
+    <script src="rosace.js"></script>
 </body>
 </html>
