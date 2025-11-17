@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandala Géométrique</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #050510;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function setup() {
+            createCanvas(800, 800);
+            noLoop();
+        }
+
+        function draw() {
+            background(5, 5, 16);
+            translate(width / 2, height / 2);
+
+            colorMode(HSB);
+            noFill();
+
+            let sections = 16;
+
+            // Étoiles polygonales concentriques
+            for (let couche = 1; couche <= 6; couche++) {
+                let rayon = couche * 50;
+                let points = sections * 2;
+
+                stroke(280 - couche * 20, 70, 85);
+                strokeWeight(1.5);
+
+                beginShape();
+                for (let i = 0; i <= points; i++) {
+                    let angle = (TWO_PI / points) * i;
+                    let r = (i % 2 === 0) ? rayon : rayon * 0.6;
+                    let x = cos(angle) * r;
+                    let y = sin(angle) * r;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+            }
+
+            // Motifs en losange
+            for (let i = 0; i < sections; i++) {
+                push();
+                rotate((TWO_PI / sections) * i);
+
+                stroke(160 + i * 5, 75, 90);
+                strokeWeight(1);
+
+                for (let d = 80; d < 320; d += 40) {
+                    line(0, d, 30, d + 20);
+                    line(30, d + 20, 0, d + 40);
+                    line(0, d + 40, -30, d + 20);
+                    line(-30, d + 20, 0, d);
+                }
+
+                pop();
+            }
+
+            // Lignes radiales ondulées
+            for (let i = 0; i < sections; i++) {
+                let angle = (TWO_PI / sections) * i;
+
+                stroke(200 + i * 3, 80, 95);
+                strokeWeight(0.8);
+
+                beginShape();
+                noFill();
+                for (let r = 0; r < 350; r += 5) {
+                    let wave = sin(r * 0.05) * 15;
+                    let x = cos(angle) * r + cos(angle + HALF_PI) * wave;
+                    let y = sin(angle) * r + sin(angle + HALF_PI) * wave;
+                    vertex(x, y);
+                }
+                endShape();
+            }
+
+            // Cercles décoratifs
+            for (let i = 0; i < sections; i++) {
+                let angle = (TWO_PI / sections) * i;
+
+                for (let r = 100; r < 320; r += 60) {
+                    let x = cos(angle) * r;
+                    let y = sin(angle) * r;
+
+                    stroke(240, 65, 88);
+                    strokeWeight(1);
+                    circle(x, y, 25);
+
+                    stroke(260, 55, 75);
+                    strokeWeight(0.5);
+                    circle(x, y, 15);
+                }
+            }
+
+            // Connexions entre points opposés
+            for (let i = 0; i < sections / 2; i++) {
+                let angle1 = (TWO_PI / sections) * i;
+                let angle2 = (TWO_PI / sections) * (i + sections / 2);
+
+                stroke(180, 50, 70, 0.4);
+                strokeWeight(0.3);
+
+                for (let r = 50; r < 300; r += 50) {
+                    let x1 = cos(angle1) * r;
+                    let y1 = sin(angle1) * r;
+                    let x2 = cos(angle2) * r;
+                    let y2 = sin(angle2) * r;
+                    line(x1, y1, x2, y2);
+                }
+            }
+
+            // Centre complexe
+            stroke(220, 80, 100);
+            strokeWeight(2);
+            for (let i = 0; i < 8; i++) {
+                circle(0, 0, (8 - i) * 10);
+            }
+        }
+    </script>
+</body>
+</html>
